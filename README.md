@@ -92,91 +92,26 @@ resource "google_compute_region_backend_service" "default" {
 Step 6: Create URL Map
 Create a URL map to route requests to the backend service in your main.tf file:
 
-hcl
-Copy code
-resource "google_compute_region_url_map" "default" {
-  name            = "${var.cloud_run_service_name}-url-map"
-  region          = var.region
-  default_service = google_compute_region_backend_service.default.self_link
-}
 Step 7: Create HTTPS Proxy
 Create a regional HTTPS proxy to route requests through HTTPS in your main.tf file:
 
 hcl
-Copy code
-resource "google_compute_region_target_https_proxy" "default" {
-  name             = "${var.cloud_run_service_name}-https-proxy"
-  url_map          = google_compute_region_url_map.default.self_link
-  ssl_certificates = [google_compute_region_ssl_certificate.dummy_cert.self_link]
-  region           = var.region
 
-  depends_on = [google_compute_region_ssl_certificate.dummy_cert]
-}
 Step 8: Create Forwarding Rule
 Create a regional forwarding rule to route incoming traffic to the HTTPS proxy in your main.tf file:
 
-hcl
-Copy code
 
-       resource "google_compute_forwarding_rule" "https" {
-     name                  = "${var.cloud_run_service_name}-https-forwarding-rule"
-     load_balancing_scheme = "EXTERNAL_MANAGED"
-     target                = google_compute_region_target_https_proxy.default.self_link
-     port_range            = "443"
-     region                = var.region
-     ip_address            = google_compute_address.default.address
-     project               = var.project_id
-     network_tier          = ""
-     network               = google_compute_network.vpc_network.self_link
-
-   }
-   
- resource "google_compute_address" "default" {
-       name        = "${var.cloud_run_service_name}-ip"
-       address_type = "EXTERNAL"
-       ip_version  = "IPV4"
-       region           = var.region
-     }
 Step 9: Configure SSL Certificate
 Configure an SSL certificate to secure the load balancer in your main.tf file:
 
 hcl
 Copy code
-resource "google_compute_region_ssl_certificate" "dummy_cert" {
-    name        = "${var.cloud_run_service_name}-dummy-cert"
-    region      = var.region
-    private_key = file("")
-    certificate = file("")
-  }
+
 Step 10: Configure Firewall Rules
 Create firewall rules to allow HTTP and HTTPS traffic in your main.tf file:
 
 hcl
-Copy code
-resource "google_compute_firewall" "allow_http" {
-  name    = "allow-http"
-  network = google_compute_network.vpc_network.name
-
-  allow {
-    protocol = "tcp"
-    ports    = ["80"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
-
-resource "google_compute_firewall" "allow_https" {
-  name    = "allow-https"
-  network = google_compute_network.vpc_network.name
-
-  allow {
-    protocol = "tcp"
-    ports    = ["443"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
-Conclusion
+Conculsion
 By following the steps outlined above, you have successfully created a regional external load balancer on Google Cloud Platform using Terraform. The load balancer routes traffic to a Cloud Run service, secured with an SSL certificate, ensuring secure and efficient handling of HTTP(S) traffic.
-KEEP IN MIND THAT THIS REGIONAL SO AL RESOURCES MUST BE REGIONAL 
+KEEP IN MIND THAT THIS REGIONAL SO ALL RESOURCES MUST BE REGIONAL 
 EDIT THIS TO FIT YOUR PROJECT
