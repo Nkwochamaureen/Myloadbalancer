@@ -58,16 +58,6 @@
     path_matcher {
       name            = "path-matcher"
       default_service = google_compute_region_backend_service.default.self_link
-
-      path_rule {
-        paths   = ["/service1/*"]
-        service = google_compute_region_backend_service.default.self_link
-      }
-
-      path_rule {
-        paths   = ["/service2/*"]
-        service = google_compute_region_backend_service.default.self_link
-      }
     }
   }
 
@@ -89,7 +79,7 @@
 
   
 
-      resource "google_compute_region_target_https_proxy" "default" {
+    resource "google_compute_region_target_https_proxy" "default" {
        name             = "${var.load_balancer_name}-https-proxy"
        url_map          = google_compute_region_url_map.default.self_link
        ssl_certificates = [google_compute_region_ssl_certificate.dummy_cert.self_link]
@@ -100,7 +90,7 @@
 
 
 
-         resource "google_compute_forwarding_rule" "https" {
+    resource "google_compute_forwarding_rule" "https" {
        name                  = "${var.cloud_run_service_name}-https-forwarding-rule"
        load_balancing_scheme = "EXTERNAL_MANAGED"
        target                = google_compute_region_target_https_proxy.default.self_link
@@ -115,11 +105,11 @@
      
 
 
-   resource "google_compute_network" "vpc" {
+ resource "google_compute_network" "vpc" {
      name = "${var.cloud_run_service_name}-vpc"
    }
 
-  resource "google_compute_subnetwork" "proxy_only_subnet" {
+resource "google_compute_subnetwork" "proxy_only_subnet" {
    name          = "proxy-only-subnet"
    ip_cidr_range = "10.2.0.0/24"
    region        = var.region
